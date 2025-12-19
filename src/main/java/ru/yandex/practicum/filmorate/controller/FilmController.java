@@ -34,6 +34,7 @@ public class FilmController {
     public Film update(@RequestBody Film newFilm) {
         validateFilm(newFilm);
         Film existingFilm = films.get(newFilm.getId());
+
         if (newFilm.getName() != null) {
             existingFilm.setName(newFilm.getName());
         }
