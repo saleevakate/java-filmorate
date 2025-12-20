@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,7 +30,7 @@ public class UserControllerTest {
     void createMailIsNotEmpty() {
         User user = new User();
         user.setLogin("testlogin");
-        user.setBirthday(LocalDateTime.of(1990, 1, 1, 1, 1));
+        user.setBirthday(LocalDate.of(1990, 1, 1));
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> userController.create(user)
@@ -43,7 +43,7 @@ public class UserControllerTest {
         User user = new User();
         user.setEmail("test.example.com");
         user.setLogin("testlogin");
-        user.setBirthday(LocalDateTime.of(1990, 1, 1, 1, 1));
+        user.setBirthday(LocalDate.of(1990, 1, 1));
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> userController.create(user)
@@ -55,7 +55,7 @@ public class UserControllerTest {
     void createEmptyLogin() {
         User user = new User();
         user.setEmail("test@example.com");
-        user.setBirthday(LocalDateTime.of(1990, 1, 1, 1, 1));
+        user.setBirthday(LocalDate.of(1990, 1, 1));
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> userController.create(user)
@@ -68,7 +68,7 @@ public class UserControllerTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("test login");
-        user.setBirthday(LocalDateTime.of(1990, 1, 1, 1, 1));
+        user.setBirthday(LocalDate.of(1990, 1, 1));
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> userController.create(user)
@@ -81,7 +81,7 @@ public class UserControllerTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testlogin");
-        user.setBirthday(LocalDateTime.of(1990, 1, 1, 1, 1));
+        user.setBirthday(LocalDate.of(1990, 1, 1));
 
         User createdUser = userController.create(user);
 
@@ -89,7 +89,7 @@ public class UserControllerTest {
         assertEquals("test@example.com", createdUser.getEmail());
         assertEquals("testlogin", createdUser.getLogin());
         assertEquals("testlogin", createdUser.getName());
-        assertEquals(LocalDateTime.of(1990, 1, 1, 1, 1), createdUser.getBirthday());
+        assertEquals(LocalDate.of(1990, 1, 1), createdUser.getBirthday());
     }
 
     @Test
@@ -97,7 +97,7 @@ public class UserControllerTest {
         User user = new User();
         user.setEmail("test@example.com");
         user.setLogin("testlogin");
-        user.setBirthday(LocalDateTime.now().plusDays(1));
+        user.setBirthday(LocalDate.now().plusDays(1));
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> userController.create(user)

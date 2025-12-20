@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,8 +17,8 @@ public class FilmController {
 
 
     private final Map<Integer, Film> films = new HashMap<>();
-    private static final LocalDateTime MIN_RELEASE_DATE =
-            LocalDateTime.of(1895, 12, 28, 0, 0);
+    private static final LocalDate MIN_RELEASE_DATE =
+            LocalDate.of(1895, 12, 28);
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -46,8 +46,6 @@ public class FilmController {
     public Film update(@RequestBody Film newFilm) {
         try {
             log.info("Начало обновления фильма с ID: {}", newFilm.getId());
-            validateFilm(newFilm);
-
             Film existingFilm = films.get(newFilm.getId());
             if (existingFilm == null) {
                 log.warn("Фильм с ID {} не найден в хранилище", newFilm.getId());
@@ -105,7 +103,7 @@ public class FilmController {
             log.warn("Продолжительность фильма равна null");
             throw new ValidationException("Продолжительность не может быть null");
         }
-        if (film.getDuration().isNegative() || film.getDuration().isZero()) {
+        if (film.getDuration() <= 0) {
             log.warn("Продолжительность фильма отрицательная или равна нулю: {}", film.getDuration());
             throw new ValidationException("Продолжительность должна быть положительным числом");
         }

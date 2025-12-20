@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +46,6 @@ public class UserController {
     public User update(@RequestBody User updatedUser) {
         try {
             log.info("Попытка обновления пользователя с ID: {}", updatedUser.getId());
-            validateUser(updatedUser);
             User existingUser = users.get(updatedUser.getId());
             if (existingUser == null) {
                 log.warn("Пользователь с ID {} не найден", updatedUser.getId());
@@ -102,7 +101,7 @@ public class UserController {
             log.warn("Дата рождения пользователя равна null");
             throw new ValidationException("Дата рождения не может быть null");
         }
-        if (user.getBirthday().isAfter(LocalDateTime.now())) {
+        if (user.getBirthday().isAfter(LocalDate.now())) {
             log.warn("Дата рождения пользователя в будущем: {}", user.getBirthday());
             throw new ValidationException("Дата рождения не может быть в будущем");
         }

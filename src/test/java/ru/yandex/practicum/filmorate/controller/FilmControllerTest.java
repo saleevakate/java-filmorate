@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,8 +30,8 @@ public class FilmControllerTest {
     void createNameNotIsEmpty() {
         Film film = new Film();
         film.setDescription("Description");
-        film.setReleaseDate(LocalDateTime.of(2000, 1, 1, 0, 0));
-        film.setDuration(Duration.ofMinutes(90));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(90);
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> filmController.create(film)
@@ -44,8 +44,8 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("Name");
         film.setDescription("a".repeat(201));
-        film.setReleaseDate(LocalDateTime.of(2000, 1, 1, 0, 0));
-        film.setDuration(Duration.ofMinutes(90));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(90);
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> filmController.create(film)
@@ -58,8 +58,8 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("Valid Name");
         film.setDescription("a".repeat(200));
-        film.setReleaseDate(LocalDateTime.of(2000, 1, 1, 0, 0));
-        film.setDuration(Duration.ofMinutes(90));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(90);
         assertDoesNotThrow(() -> filmController.create(film));
     }
 
@@ -68,8 +68,8 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("Name");
         film.setDescription("Description");
-        film.setReleaseDate(LocalDateTime.of(1895, 12, 27, 0, 0));
-        film.setDuration(Duration.ofMinutes(90));
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
+        film.setDuration(90);
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> filmController.create(film)
@@ -82,8 +82,8 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("Name");
         film.setDescription("Description");
-        film.setReleaseDate(LocalDateTime.of(2000, 1, 1, 0, 0));
-        film.setDuration(Duration.ofMinutes(-90));
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(-90);
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> filmController.create(film)
