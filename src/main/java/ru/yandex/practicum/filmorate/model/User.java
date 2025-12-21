@@ -11,7 +11,7 @@ public class User {
 
     @NotNull(message = "Электронная почта не может быть null")
     @NotBlank(message = "Электронная почта не может быть пустой")
-    @Email(message = "Некорректный формат электронной почты")
+    @Email(message = "Электронная почта должна содержать символ @")
     private String email;
 
     @NotNull(message = "Логин не может быть null")

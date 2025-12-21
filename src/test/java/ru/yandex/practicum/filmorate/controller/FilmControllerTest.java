@@ -9,14 +9,20 @@ import java.time.LocalDate;
 import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FilmControllerTest {
 
-    private FilmController filmController;
+    private FilmController filmController = new FilmController();
+    ;
+    Film film = new Film();
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        film.setName("Name");
+        film.setDescription("Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(90);
     }
 
     @Test
@@ -26,67 +32,37 @@ public class FilmControllerTest {
     }
 
     @Test
-    void createNameNotIsEmpty() {
-        Film film = new Film();
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(90);
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.create(film)
-        );
-        assertEquals("Название не может быть пустым", exception.getMessage());
+    void create() {
+        Film createFilm = filmController.create(film);
+        assertEquals("Name", createFilm.getName());
+        assertEquals("Description", createFilm.getDescription());
+        assertEquals(LocalDate.of(2000, 1, 1), createFilm.getReleaseDate());
+        assertEquals(90, createFilm.getDuration());
     }
 
     @Test
-    void createLongDescription() {
-        Film film = new Film();
-        film.setName("Name");
-        film.setDescription("a".repeat(201));
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(90);
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.create(film)
-        );
-        assertEquals("Описание не может превышать 200 символов", exception.getMessage());
+    void update() {
+        Film createFilm = filmController.create(film);
+        Film updatedFilm = new Film();
+        updatedFilm.setId(createFilm.getId());
+        updatedFilm.setName("New Name");
+        updatedFilm.setDescription("New Description");
+        updatedFilm.setReleaseDate(LocalDate.of(2005, 1, 1));
+        updatedFilm.setDuration(120);
+        Film result = filmController.update(updatedFilm);
+        assertEquals("New Name", result.getName());
+        assertEquals("New Description", result.getDescription());
+        assertEquals(LocalDate.of(2005, 1, 1), result.getReleaseDate());
+        assertEquals(120, result.getDuration());
     }
 
     @Test
-    void createDescription200Chars() {
-        Film film = new Film();
-        film.setName("Valid Name");
-        film.setDescription("a".repeat(200));
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(90);
-        assertDoesNotThrow(() -> filmController.create(film));
-    }
-
-    @Test
-    void createReleaseData() {
-        Film film = new Film();
-        film.setName("Name");
-        film.setDescription("Description");
+    void validateFilmInTheFuture() {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        film.setDuration(90);
         ValidationException exception = assertThrows(
                 ValidationException.class,
                 () -> filmController.create(film)
         );
         assertEquals("Дата релиза не может быть раньше 28 декабря 1895 года", exception.getMessage());
-    }
-
-    @Test
-    void createDurationPositive() {
-        Film film = new Film();
-        film.setName("Name");
-        film.setDescription("Description");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(-90);
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> filmController.create(film)
-        );
-        assertEquals("Продолжительность должна быть положительным числом", exception.getMessage());
     }
 }

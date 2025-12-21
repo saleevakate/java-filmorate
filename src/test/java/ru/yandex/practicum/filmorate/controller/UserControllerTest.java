@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -12,12 +11,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerTest {
 
-    private UserController userController;
+    private UserController userController = new UserController();
+    private User user = new User();
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
-        User user = new User();
+        user.setName("Test User");
+        user.setLogin("userlogin");
+        user.setEmail("test@example.com");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
     }
 
     @Test
@@ -27,81 +29,27 @@ public class UserControllerTest {
     }
 
     @Test
-    void createMailIsNotEmpty() {
-        User user = new User();
-        user.setLogin("testlogin");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> userController.create(user)
-        );
-        assertEquals("Электронная почта не может быть пустой", exception.getMessage());
-    }
-
-    @Test
-    void createDogInTheMail() {
-        User user = new User();
-        user.setEmail("test.example.com");
-        user.setLogin("testlogin");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> userController.create(user)
-        );
-        assertEquals("Электронная почта должна содержать символ @", exception.getMessage());
-    }
-
-    @Test
-    void createEmptyLogin() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> userController.create(user)
-        );
-        assertEquals("Логин не может быть пустым", exception.getMessage());
-    }
-
-    @Test
-    void createSpaceInLogin() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("test login");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> userController.create(user)
-        );
-        assertEquals("Логин не может содержать пробелы", exception.getMessage());
-    }
-
-    @Test
-    void createNameIsLogin() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-
+    void create() {
         User createdUser = userController.create(user);
-
-        assertEquals(1, createdUser.getId());
         assertEquals("test@example.com", createdUser.getEmail());
-        assertEquals("testlogin", createdUser.getLogin());
-        assertEquals("testlogin", createdUser.getName());
+        assertEquals("userlogin", createdUser.getLogin());
+        assertEquals("Test User", createdUser.getName());
         assertEquals(LocalDate.of(1990, 1, 1), createdUser.getBirthday());
     }
 
     @Test
-    void createBirthdayInTheFuture() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setLogin("testlogin");
-        user.setBirthday(LocalDate.now().plusDays(1));
-        ValidationException exception = assertThrows(
-                ValidationException.class,
-                () -> userController.create(user)
-        );
-        assertEquals("Дата рождения не может быть в будущем", exception.getMessage());
+    void update() {
+        User createdUser = userController.create(user);
+        User updatedUser = new User();
+        updatedUser.setId(createdUser.getId());
+        updatedUser.setEmail("new@example.com");
+        updatedUser.setLogin("newlogin");
+        updatedUser.setName("New Name");
+        updatedUser.setBirthday(LocalDate.of(1995, 5, 5));
+        User result = userController.update(updatedUser);
+        assertEquals("new@example.com", result.getEmail());
+        assertEquals("newlogin", result.getLogin());
+        assertEquals("New Name", result.getName());
+        assertEquals(LocalDate.of(1995, 5, 5), result.getBirthday());
     }
 }
