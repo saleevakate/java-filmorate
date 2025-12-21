@@ -1,11 +1,12 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
+@Validated
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
@@ -24,9 +26,8 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
             log.info("Попытка создания нового пользователя: {}", user);
-            validateUser(user);
             if (user.getName() == null) {
                 user.setName(user.getLogin());
                 log.debug("Имя пользователя не указано, установлено по логину: {}", user.getName());
@@ -38,7 +39,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User updatedUser) {
+    public User update(@Valid @RequestBody User updatedUser) {
             log.info("Попытка обновления пользователя с ID: {}", updatedUser.getId());
             User existingUser = users.get(updatedUser.getId());
             if (existingUser == null) {
@@ -63,39 +64,6 @@ public class UserController {
             }
             log.info("Пользователь ID {} успешно обновлен", updatedUser.getId());
             return existingUser;
-    }
-
-    private void validateUser(User user) {
-        log.debug("Начало валидации пользователя: {}", user);
-        if (user == null) {
-            log.warn("Пользователь равен null");
-            throw new ValidationException("Пользователь не может быть null");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.warn("Email пользователя пуст или null");
-            throw new ValidationException("Электронная почта не может быть пустой");
-        }
-        if (!user.getEmail().contains("@")) {
-            log.warn("Email пользователя не содержит символ @: {}", user.getEmail());
-            throw new ValidationException("Электронная почта должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank()) {
-            log.warn("Логин пользователя пуст или null");
-            throw new ValidationException("Логин не может быть пустым");
-        }
-        if (user.getLogin().contains(" ")) {
-            log.warn("Логин пользователя содержит пробелы: {}", user.getLogin());
-            throw new ValidationException("Логин не может содержать пробелы");
-        }
-        if (user.getBirthday() == null) {
-            log.warn("Дата рождения пользователя равна null");
-            throw new ValidationException("Дата рождения не может быть null");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Дата рождения пользователя в будущем: {}", user.getBirthday());
-            throw new ValidationException("Дата рождения не может быть в будущем");
-        }
-        log.debug("Валидация пользователя успешно пройдена: {}", user);
     }
 
     private int getNextId() {
