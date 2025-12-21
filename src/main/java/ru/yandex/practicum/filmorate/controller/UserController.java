@@ -25,7 +25,6 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
-        try {
             log.info("Попытка создания нового пользователя: {}", user);
             validateUser(user);
             if (user.getName() == null) {
@@ -36,15 +35,10 @@ public class UserController {
             users.put(user.getId(), user);
             log.info("Пользователь успешно создан с ID: {}", user.getId());
             return user;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при создании пользователя: {}", e.getMessage());
-            throw e;
-        }
     }
 
     @PutMapping
     public User update(@RequestBody User updatedUser) {
-        try {
             log.info("Попытка обновления пользователя с ID: {}", updatedUser.getId());
             User existingUser = users.get(updatedUser.getId());
             if (existingUser == null) {
@@ -69,10 +63,6 @@ public class UserController {
             }
             log.info("Пользователь ID {} успешно обновлен", updatedUser.getId());
             return existingUser;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при обновлении пользователя: {}", e.getMessage());
-            throw e;
-        }
     }
 
     private void validateUser(User user) {
@@ -111,7 +101,7 @@ public class UserController {
     private int getNextId() {
         int currentMaxId = users.keySet()
                 .stream()
-                .mapToInt(id -> id)
+                .mapToInt(Integer::intValue)
                 .max()
                 .orElse(0);
         int nextId = ++currentMaxId;

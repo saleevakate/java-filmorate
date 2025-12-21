@@ -28,7 +28,6 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        try {
             log.info("Начало создания нового фильма. Данные: {}", film);
             validateFilm(film);
             int newId = getNextId();
@@ -36,15 +35,10 @@ public class FilmController {
             films.put(newId, film);
             log.info("Фильм успешно создан. ID: {}, название: {}", newId, film.getName());
             return film;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при создании фильма: {}", e.getMessage());
-            throw e;
-        }
     }
 
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
-        try {
             log.info("Начало обновления фильма с ID: {}", newFilm.getId());
             Film existingFilm = films.get(newFilm.getId());
             if (existingFilm == null) {
@@ -69,10 +63,6 @@ public class FilmController {
             }
             log.info("Фильм ID {} успешно обновлен", newFilm.getId());
             return existingFilm;
-        } catch (ValidationException e) {
-            log.error("Ошибка валидации при обновлении фильма: {}", e.getMessage());
-            throw e;
-        }
     }
 
     private void validateFilm(Film film) {
@@ -114,7 +104,7 @@ public class FilmController {
     private int getNextId() {
         int currentMaxId = films.keySet()
                 .stream()
-                .mapToInt(id -> id)
+                .mapToInt(Integer::intValue)
                 .max()
                 .orElse(0);
         int nextId = ++currentMaxId;
