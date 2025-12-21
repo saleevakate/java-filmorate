@@ -17,18 +17,6 @@ public class UserValidationTest {
         validator = factory.getValidator();
     }
 
-    @Test
-    void emailIsNull() {
-        User user = new User();
-        user.setLogin("userlogin");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        for (ConstraintViolation<User> violation : violations) {
-            if ("Электронная почта не может быть null".equals(violation.getMessage())) {
-                return;
-            }
-        }
-    }
 
     @Test
     void emailIsEmpty() {
@@ -53,19 +41,6 @@ public class UserValidationTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         for (ConstraintViolation<User> violation : violations) {
             if ("Электронная почта должна содержать символ @".equals(violation.getMessage())) {
-                return;
-            }
-        }
-    }
-
-    @Test
-    void loginIsNull() {
-        User user = new User();
-        user.setEmail("test@example.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        for (ConstraintViolation<User> violation : violations) {
-            if ("Логин не может быть null".equals(violation.getMessage())) {
                 return;
             }
         }

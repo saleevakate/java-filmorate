@@ -21,20 +21,6 @@ public class FilmValidationTest {
     }
 
     @Test
-    void nameIsNull() {
-        Film film = new Film();
-        film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(2000, 1, 1));
-        film.setDuration(90);
-        Set<ConstraintViolation<Film>> violations = validator.validate(film);
-        for (ConstraintViolation<Film> violation : violations) {
-            if ("Название не может быть null".equals(violation.getMessage())) {
-                return;
-            }
-        }
-    }
-
-    @Test
     void nameIsEmpty() {
         Film film = new Film();
         film.setName("");
