@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -8,6 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FilmService {
 
     private final FilmStorage filmStorage;
@@ -17,26 +19,27 @@ public class FilmService {
         this.filmStorage = filmStorage;
     }
 
-    public boolean addLike(Integer filmId, Integer userId) {
+    public void addLike(Integer filmId, Integer userId) {
         filmStorage.validateFilmExists(filmId);
         Set<Integer> likes = filmLikes.computeIfAbsent(filmId, k -> new HashSet<>());
         if (hasUserLiked(filmId, userId)) {
-            return false;
+            return;
         }
         likes.add(userId);
-        return true;
+        log.info("Лайк добавлен: фильм {} ← пользователь {}", filmId, userId);
     }
 
-    public boolean removeLike(Integer filmId, Integer userId) {
+    public void removeLike(Integer filmId, Integer userId) {
         Set<Integer> likes = filmLikes.get(filmId);
         if (!hasUserLiked(filmId, userId)) {
-            return false;
+            return;
         }
         likes.remove(userId);
-        return true;
+        log.info("Лайк удалён: фильм {} ← пользователь {}", filmId, userId);
     }
 
     public List<Film> getTop10Films() {
+        log.info("Получен список 10 популярных фильмов.");
         return filmStorage.findAll().stream()
                 .map(film -> new Object() {
                     final Film topFilm = film;
@@ -48,11 +51,11 @@ public class FilmService {
                 .collect(Collectors.toList());
     }
 
-    public int getLikeCount(Integer filmId) {
+    private int getLikeCount(Integer filmId) {
         return filmLikes.getOrDefault(filmId, Collections.emptySet()).size();
     }
 
-    public boolean hasUserLiked(Integer filmId, Integer userId) {
+    private boolean hasUserLiked(Integer filmId, Integer userId) {
         Set<Integer> likes = filmLikes.get(filmId);
         return likes != null && likes.contains(userId);
     }
@@ -77,7 +80,4 @@ public class FilmService {
         return filmStorage.filmById(id);
     }
 
-    public Film validateFilmExists(Integer id) {
-        return filmStorage.validateFilmExists(id);
-    }
 }

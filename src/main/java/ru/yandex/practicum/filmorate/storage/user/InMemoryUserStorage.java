@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -18,7 +17,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        log.info("Попытка создания нового пользователя: {}", user);
         if (user.getName() == null) {
             user.setName(user.getLogin());
             log.debug("Имя пользователя не указано, установлено по логину: {}", user.getName());
@@ -31,12 +29,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User update(User updatedUser) {
-        log.info("Попытка обновления пользователя с ID: {}", updatedUser.getId());
-        User existingUser = users.get(updatedUser.getId());
-        if (existingUser == null) {
-            log.warn("Пользователь с ID {} не найден", updatedUser.getId());
-            throw new ValidationException("Пользователь с указанным ID не найден");
-        }
+        User existingUser = validateUserExists(updatedUser.getId()); //проверка наличия пользователя теперь здесь
         if (updatedUser.getEmail() != null) {
             existingUser.setEmail(updatedUser.getEmail());
             log.debug("Обновлён email пользователя ID {}: {}", updatedUser.getId(), updatedUser.getEmail());
@@ -72,6 +65,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User validateUserExists(Integer id) {
+        log.info("Проверка существования пользователя с ID: {}", id);
         User userId = users.get(id);
         if (userId == null) {
             throw new UserNotFoundException("Пользователь с ID " + id + " не найден");
@@ -81,7 +75,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        log.info("Получен запрос на получение всех пользователей");
+        log.info("Получен список всех пользователей");
         return users.values();
     }
 

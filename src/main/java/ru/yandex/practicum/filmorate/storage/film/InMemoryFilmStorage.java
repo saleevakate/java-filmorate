@@ -19,7 +19,6 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Film create(Film film) {
-        log.info("Начало создания нового фильма. Данные: {}", film);
         validateFilmInTheFuture(film);
         int newId = getNextId();
         film.setId(newId);
@@ -30,12 +29,7 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Film update(Film newFilm) {
-        log.info("Начало обновления фильма с ID: {}", newFilm.getId());
-        Film existingFilm = films.get(newFilm.getId());
-        if (existingFilm == null) {
-            log.warn("Фильм с ID {} не найден в хранилище", newFilm.getId());
-            throw new ValidationException("Фильм с указанным ID не найден");
-        }
+        Film existingFilm = validateFilmExists(newFilm.getId()); //проверка наличия фильма теперь здесь
         if (newFilm.getName() != null) {
             existingFilm.setName(newFilm.getName());
             log.debug("Для фильма ID {} обновлено название: {}", newFilm.getId(), newFilm.getName());
@@ -80,7 +74,7 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Collection<Film> findAll() {
-        log.info("Получен запрос на получение списка всех фильмов");
+        log.info("Получен список всех фильмов");
         return films.values();
     }
 

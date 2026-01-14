@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -9,6 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class UserService {
 
     private final UserStorage userStorage;
@@ -28,6 +30,7 @@ public class UserService {
         friends.putIfAbsent(friendId, new HashSet<>());
         friends.get(userId).add(friendId);
         friends.get(friendId).add(userId);
+        log.info("Друг успешно добавлен: {} ↔ {}", userId, friendId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
@@ -37,6 +40,16 @@ public class UserService {
             friends.get(userId).remove(friendId);
             friends.get(friendId).remove(userId);
         }
+        log.info("Друг удалён: {} ↔ {}", userId, friendId);
+    }
+
+    public Collection<User> getFriends(Integer userId) {
+        userStorage.validateUserExists(userId);
+        Set<Integer> friendIds = friends.getOrDefault(userId, Collections.emptySet());
+        log.info("Найден {} друзей для пользователя {}", friendIds.size(), userId);
+        return friendIds.stream()
+                .map(userStorage::userById)
+                .collect(Collectors.toList());
     }
 
     public Collection<User> getCommonFriends(Integer userId1, Integer userId2) {
@@ -46,15 +59,8 @@ public class UserService {
         Set<Integer> friendsOfSecond = friends.getOrDefault(userId2, Collections.emptySet());
         Set<Integer> commonFriendIds = new HashSet<>(friendsOfFirst);
         commonFriendIds.retainAll(friendsOfSecond);
+        log.info("Найдено общих друзей: {} для пользователей {} и {}", commonFriendIds.size(), userId1, userId2);
         return commonFriendIds.stream()
-                .map(userStorage::userById)
-                .collect(Collectors.toList());
-    }
-
-    public Collection<User> getFriends(Integer userId) {
-        userStorage.validateUserExists(userId);
-        Set<Integer> friendIds = friends.getOrDefault(userId, Collections.emptySet());
-        return friendIds.stream()
                 .map(userStorage::userById)
                 .collect(Collectors.toList());
     }
@@ -79,7 +85,4 @@ public class UserService {
         return userStorage.userById(id);
     }
 
-    public User validateUserExists(Integer id) {
-        return userStorage.validateUserExists(id);
-    }
 }
