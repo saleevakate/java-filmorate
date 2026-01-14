@@ -2,12 +2,13 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -67,7 +68,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film validateFilmExists(Integer id) {
         Film filmById = films.get(id);
         if (filmById == null) {
-            throw new FilmNotFoundException("Фильм с ID " + id + " не найден");
+            throw new ValidationException("Фильм с ID " + id + " не найден");
         }
         return filmById;
     }
@@ -82,7 +83,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
             log.warn("Дата релиза {} раньше минимально допустимой даты {}",
                     film.getReleaseDate(), MIN_RELEASE_DATE);
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
+            throw new ValidationException("Какато фигня");
         }
     }
 
