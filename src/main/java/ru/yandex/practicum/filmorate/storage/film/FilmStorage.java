@@ -17,4 +17,5 @@ public interface FilmStorage {
     Collection<Film> findAll();
 
     Film validateFilmExists(Integer id);
+
 }
