@@ -85,4 +85,8 @@ public class UserService {
         return userStorage.userById(id);
     }
 
+    public User validateUserExists(Integer id) {
+        return userStorage.validateUserExists(id);
+    }
+
 }

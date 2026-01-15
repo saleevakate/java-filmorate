@@ -13,14 +13,17 @@ import java.util.stream.Collectors;
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final UserService userService;
     private final Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
 
-    public FilmService(FilmStorage filmStorage) {
+    public FilmService(FilmStorage filmStorage, UserService userService) {
         this.filmStorage = filmStorage;
+        this.userService = userService;
     }
 
     public void addLike(Integer filmId, Integer userId) {
         filmStorage.validateFilmExists(filmId);
+        userService.validateUserExists(userId);
         Set<Integer> likes = filmLikes.computeIfAbsent(filmId, k -> new HashSet<>());
         if (hasUserLiked(filmId, userId)) {
             return;
@@ -30,6 +33,8 @@ public class FilmService {
     }
 
     public void removeLike(Integer filmId, Integer userId) {
+        filmStorage.validateFilmExists(filmId);
+        userService.validateUserExists(userId);
         Set<Integer> likes = filmLikes.get(filmId);
         if (!hasUserLiked(filmId, userId)) {
             return;
