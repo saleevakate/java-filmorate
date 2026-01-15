@@ -22,7 +22,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND) //404
     public ErrorResponse handleNotFoundException(NotFoundException e) {
-        log.error("Ресурс не найден: {}" +e.getMessage());
+        log.error("Ресурс не найден: {}" + e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
