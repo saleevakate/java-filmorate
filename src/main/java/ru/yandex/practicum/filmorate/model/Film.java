@@ -21,4 +21,11 @@ public class Film {
     @NotNull(message = "Продолжительность не может быть null")
     @Positive(message = "Продолжительность должна быть положительным числом")
     private Integer duration;
+
+    @NotNull(message = "Жанр не может быть пустым")
+    private String genre;
+
+    @NotNull(message = "Рейтинг не может быть пустым")
+    private String ratingMPA;
+
 }
