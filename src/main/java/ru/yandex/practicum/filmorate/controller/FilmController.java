@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -49,6 +50,20 @@ public class FilmController {
         Film updatedFilm = filmService.update(film);
         sortGenres(updatedFilm);
         return updatedFilm;
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> remove(@PathVariable Integer id) {
+        log.info("Удаление фильма с ID: {}", id);
+        try {
+            filmService.remove(id);
+            return ResponseEntity.ok().build();
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Ошибка при удалении фильма: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при удалении фильма", e);
+        }
     }
 
     @GetMapping("/popular")

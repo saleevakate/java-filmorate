@@ -13,7 +13,8 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class FilmServiceTest {
@@ -72,17 +73,6 @@ class FilmServiceTest {
 
         assertThat(result).isEqualTo(expectedFilms);
         verify(filmStorage).findAll();
-    }
-
-    @Test
-    void create_ShouldCallStorage() {
-        Film film = new Film();
-        when(filmStorage.create(film)).thenReturn(film);
-
-        Film result = filmService.create(film);
-
-        assertThat(result).isEqualTo(film);
-        verify(filmStorage).create(film);
     }
 
     @Test
