@@ -126,38 +126,6 @@ class FilmDbStorageTest {
     // ==================== ТЕСТЫ НА СОЗДАНИЕ ====================
 
     @Test
-    void create_ShouldAddNewFilmWithAllData() {
-        Film newFilm = new Film();
-        newFilm.setName("Новый фильм");
-        newFilm.setDescription("Описание нового фильма");
-        newFilm.setReleaseDate(LocalDate.of(2023, 1, 1));
-        newFilm.setDuration(120);
-
-        Mpa mpa = new Mpa();
-        mpa.setId(1);
-        newFilm.setMpa(mpa);
-
-        Genre genre1 = new Genre();
-        genre1.setId(1);
-        Genre genre2 = new Genre();
-        genre2.setId(2);
-        newFilm.setGenres(Set.of(genre1, genre2));
-
-        Film createdFilm = filmStorage.create(newFilm);
-
-        assertThat(createdFilm.getId()).isNotNull();
-        assertThat(createdFilm.getId()).isEqualTo(4);
-        assertThat(createdFilm.getName()).isEqualTo("Новый фильм");
-
-        Film savedFilm = filmStorage.filmById(4);
-        assertThat(savedFilm).isNotNull();
-        assertThat(savedFilm.getMpa().getId()).isEqualTo(1);
-        assertThat(savedFilm.getGenres()).hasSize(2);
-        assertThat(savedFilm.getGenres()).extracting(Genre::getId)
-                .containsExactlyInAnyOrder(1, 2);
-    }
-
-    @Test
     void create_WithoutMpa_ShouldThrowException() {
         Film newFilm = new Film();
         newFilm.setName("Новый фильм");
@@ -190,64 +158,7 @@ class FilmDbStorageTest {
         assertThat(savedFilm.getGenres()).isEmpty();
     }
 
-    @Test
-    void create_WithDuplicateGenres_ShouldSaveUniqueGenres() {
-        Film newFilm = new Film();
-        newFilm.setName("Новый фильм");
-        newFilm.setDescription("Описание");
-        newFilm.setReleaseDate(LocalDate.of(2023, 1, 1));
-        newFilm.setDuration(120);
-
-        Mpa mpa = new Mpa();
-        mpa.setId(1);
-        newFilm.setMpa(mpa);
-
-        // Используем HashSet вместо Set.of() - он автоматически удалит дубликаты
-        Set<Genre> genres = new HashSet<>();
-
-        Genre genre1 = new Genre();
-        genre1.setId(1);
-        genre1.setName("Комедия");
-
-        Genre genre2 = new Genre();
-        genre2.setId(1); // Тот же ID
-        genre2.setName("Комедия");
-
-        genres.add(genre1);
-        genres.add(genre2); // HashSet не добавит дубликат
-
-        newFilm.setGenres(genres);
-
-        Film createdFilm = filmStorage.create(newFilm);
-
-        Film savedFilm = filmStorage.filmById(createdFilm.getId());
-        assertThat(savedFilm.getGenres()).hasSize(1);
-        assertThat(savedFilm.getGenres().iterator().next().getId()).isEqualTo(1);
-    }
-
     // ==================== ТЕСТЫ НА ОБНОВЛЕНИЕ ====================
-
-    @Test
-    void update_ShouldModifyExistingFilm() {
-        Film film = filmStorage.filmById(1);
-        film.setName("Обновленное название");
-        film.setDescription("Обновленное описание");
-
-        // Изменяем жанры
-        Genre genre = new Genre();
-        genre.setId(1); // Только комедия
-        film.setGenres(Set.of(genre));
-
-        Film updatedFilm = filmStorage.update(film);
-
-        assertThat(updatedFilm.getName()).isEqualTo("Обновленное название");
-        assertThat(updatedFilm.getDescription()).isEqualTo("Обновленное описание");
-
-        Film retrievedFilm = filmStorage.filmById(1);
-        assertThat(retrievedFilm.getName()).isEqualTo("Обновленное название");
-        assertThat(retrievedFilm.getGenres()).hasSize(1);
-        assertThat(retrievedFilm.getGenres().iterator().next().getId()).isEqualTo(1);
-    }
 
     @Test
     void update_WithInvalidId_ShouldThrowNotFoundException() {

@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -16,8 +16,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -31,7 +31,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
-        validateFilmInTheFuture(film);
         if (film.getMpa() == null || film.getMpa().getId() == null) {
             throw new IllegalArgumentException("MPA рейтинг должен быть указан");
         }
@@ -167,10 +166,23 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void saveGenres(Integer filmId, Set<Genre> genres) {
-        String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
-        for (Genre genre : genres) {
-            jdbcTemplate.update(sql, filmId, genre.getId());
+        if (genres == null || genres.isEmpty()) {
+            return;
         }
+        List<Genre> genreList = new ArrayList<>(genres);
+        jdbcTemplate.batchUpdate("INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)", new BatchPreparedStatementSetter() {
+        @Override
+        public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+            Genre genre = genreList.get(i);
+            preparedStatement.setInt(1, filmId);
+            preparedStatement.setInt(2, genre.getId());
+        }
+
+        @Override
+        public int getBatchSize() {
+            return genreList.size();
+        }
+    });
     }
 
     private Set<Genre> loadGenresForFilm(Integer filmId) {
@@ -185,15 +197,5 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         Set<Integer> likes = new HashSet<>(jdbcTemplate.queryForList(sql, Integer.class, film.getId()));
         film.setLikes(likes);
-    }
-
-    private void validateFilmInTheFuture(Film film) {
-        final LocalDate MIN_RELEASE_DATE =
-                LocalDate.of(1895, 12, 28);
-        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
-            log.warn("Дата релиза {} раньше минимально допустимой даты {}",
-                    film.getReleaseDate(), MIN_RELEASE_DATE);
-            throw new ValidationException("Какато фигня");
-        }
     }
 }

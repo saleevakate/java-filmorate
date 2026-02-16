@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -52,6 +53,7 @@ public class FilmService {
     }
 
     public Film create(Film film) {
+        validateFilmInTheFuture(film);
         if (film.getMpa() != null && film.getMpa().getId() != null) {
             mpaStorage.findById(film.getMpa().getId());
         } else {
@@ -80,6 +82,16 @@ public class FilmService {
 
     public Film filmById(Integer id) {
         return filmStorage.filmById(id);
+    }
+
+    private void validateFilmInTheFuture(Film film) {
+        final LocalDate MIN_RELEASE_DATE =
+                LocalDate.of(1895, 12, 28);
+        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
+            log.warn("Дата релиза {} раньше минимально допустимой даты {}",
+                    film.getReleaseDate(), MIN_RELEASE_DATE);
+            throw new ValidationException("Какато фигня");
+        }
     }
 
 }
