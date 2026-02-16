@@ -53,7 +53,7 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> getPopularFilms(
-            @RequestParam(defaultValue = "100000") Integer count) {
+            @RequestParam(defaultValue = "10") Integer count) {
         log.info("Получение {} популярных фильмов", count);
         List<Film> films = filmService.getTopFilms(count);
         films.forEach(this::sortGenres);
