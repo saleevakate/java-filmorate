@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
@@ -22,10 +24,10 @@ public class Film {
     @Positive(message = "Продолжительность должна быть положительным числом")
     private Integer duration;
 
-    @NotNull(message = "Жанр не может быть пустым")
-    private String genre;
+    private Mpa mpa;
 
-    @NotNull(message = "Рейтинг не может быть пустым")
-    private String ratingMPA;
+    private Set<Genre> genres = new HashSet<>();
 
+    @JsonIgnore
+    private Set<Integer> likes = new HashSet<>();
 }

@@ -1,76 +1,69 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.util.Collection;
+import java.util.*;
 
 @RestController
 @RequestMapping("/films")
 @Slf4j
-@Validated
+@RequiredArgsConstructor
 public class FilmController {
 
     private final FilmService filmService;
 
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Integer id) {
+        log.info("Получение фильма с ID: {}", id);
+        Film film = filmService.filmById(id);
+        sortGenres(film);
+        return film;
     }
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("Получен запрос на получение списка всех фильмов");
-        return filmService.findAll();
+        log.info("Получение всех фильмов");
+        Collection<Film> films = filmService.findAll();
+        films.forEach(this::sortGenres);
+        return films;
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        log.info("Начало создания нового фильма. Данные: {}", film);
-        return filmService.create(film);
+        log.info("Создание фильма: {}", film);
+        Film createdFilm = filmService.create(film);
+        sortGenres(createdFilm);
+        return createdFilm;
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film newFilm) {
-        log.info("Начало обновления фильма с ID: {}", newFilm.getId());
-        return filmService.update(newFilm);
-    }
-
-    @DeleteMapping("/{id}")
-    public void remove(@Valid @PathVariable("id") Integer id) {
-        log.info("Удаление фильма с ID: {}", id);
-        filmService.remove(id);
-    }
-
-    @GetMapping("/{id}")
-    public Film filmById(@Valid @PathVariable("id") Integer id) {
-        log.info("Поиск фильма с ID: {}", id);
-        return filmService.filmById(id);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(
-            @Valid @PathVariable("id") Integer filmId,
-            @Valid @PathVariable("userId") Integer userId) {
-        log.info("Пользователь {} ставит лайк фильму {}", userId, filmId);
-        filmService.addLike(filmId, userId);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(
-            @Valid @PathVariable("id") Integer filmId,
-            @Valid @PathVariable("userId") Integer userId) {
-        log.info("Пользователь {} удаляет лайк у фильма {}", userId, filmId);
-        filmService.removeLike(filmId, userId);
+    public Film update(@Valid @RequestBody Film film) {
+        log.info("Обновление фильма с ID: {}", film.getId());
+        Film updatedFilm = filmService.update(film);
+        sortGenres(updatedFilm);
+        return updatedFilm;
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getTop10Films() {
-        log.info("Получение списка 10 популярных фильмов.");
-        return filmService.getTop10Films();
+    public Collection<Film> getPopularFilms(
+            @RequestParam(defaultValue = "10") Integer count) {
+        log.info("Получение {} популярных фильмов", count);
+        List<Film> films = filmService.getTopFilms(count);
+        films.forEach(this::sortGenres);
+        return films;
     }
 
+    private void sortGenres(Film film) {
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+            Set<Genre> sortedGenres = new TreeSet<>(Comparator.comparing(Genre::getId));
+            sortedGenres.addAll(film.getGenres());
+            film.setGenres(sortedGenres);
+        }
+    }
 }

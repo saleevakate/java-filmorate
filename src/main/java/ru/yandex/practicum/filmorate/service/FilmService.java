@@ -3,66 +3,39 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.List;
 
 @Service
 @Slf4j
 public class FilmService {
 
-    private final FilmStorage filmStorage;
-    private final UserService userService;
-    private final Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
+    private final FilmDbStorage filmStorage;
+    private final UserDbStorage userStorage;
 
-    public FilmService(FilmStorage filmStorage, UserService userService) {
+    public FilmService(FilmDbStorage filmStorage, UserDbStorage userStorage) {
         this.filmStorage = filmStorage;
-        this.userService = userService;
+        this.userStorage = userStorage;
     }
 
     public void addLike(Integer filmId, Integer userId) {
         filmStorage.validateFilmExists(filmId);
-        userService.validateUserExists(userId);
-        Set<Integer> likes = filmLikes.computeIfAbsent(filmId, k -> new HashSet<>());
-        if (hasUserLiked(filmId, userId)) {
-            return;
-        }
-        likes.add(userId);
-        log.info("Лайк добавлен: фильм {} ← пользователь {}", filmId, userId);
+        userStorage.validateUserExists(userId);
+        filmStorage.addLike(filmId, userId);
     }
 
     public void removeLike(Integer filmId, Integer userId) {
         filmStorage.validateFilmExists(filmId);
-        userService.validateUserExists(userId);
-        Set<Integer> likes = filmLikes.get(filmId);
-        if (!hasUserLiked(filmId, userId)) {
-            return;
-        }
-        likes.remove(userId);
-        log.info("Лайк удалён: фильм {} ← пользователь {}", filmId, userId);
+        userStorage.validateUserExists(userId);
+        filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getTop10Films() {
-        log.info("Получен список 10 популярных фильмов.");
-        return filmStorage.findAll().stream()
-                .map(film -> new Object() {
-                    final Film topFilm = film;
-                    final int likeCount = getLikeCount(topFilm.getId());
-                })
-                .sorted((a, b) -> Integer.compare(b.likeCount, a.likeCount))
-                .limit(10)
-                .map(obj -> obj.topFilm)
-                .collect(Collectors.toList());
-    }
-
-    private int getLikeCount(Integer filmId) {
-        return filmLikes.getOrDefault(filmId, Collections.emptySet()).size();
-    }
-
-    private boolean hasUserLiked(Integer filmId, Integer userId) {
-        Set<Integer> likes = filmLikes.get(filmId);
-        return likes != null && likes.contains(userId);
+    public List<Film> getTopFilms(Integer count) {
+        log.info("Получение списка {} популярных фильмов.", count);
+        return filmStorage.getTopFilms(count);
     }
 
     public Collection<Film> findAll() {
