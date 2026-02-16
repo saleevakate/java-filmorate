@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -52,11 +53,24 @@ public class FilmController {
 
     @GetMapping("/popular")
     public Collection<Film> getPopularFilms(
-            @RequestParam(defaultValue = "10") Integer count) {
+            @RequestParam(defaultValue = "100000") Integer count) {
         log.info("Получение {} популярных фильмов", count);
         List<Film> films = filmService.getTopFilms(count);
         films.forEach(this::sortGenres);
         return films;
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Integer id, @PathVariable Integer userId) {
+        log.info("Пользователь {} ставит лайк фильму {}", userId, id);
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public ResponseEntity<Void> removeLike(@PathVariable Integer id, @PathVariable Integer userId) {
+        log.info("Пользователь {} удаляет лайк у фильма {}", userId, id);
+        filmService.removeLike(id, userId);
+        return ResponseEntity.ok().build();
     }
 
     private void sortGenres(Film film) {

@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -11,9 +13,11 @@ import ru.yandex.practicum.filmorate.dal.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -27,6 +31,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film create(Film film) {
+        validateFilmInTheFuture(film);
         if (film.getMpa() == null || film.getMpa().getId() == null) {
             throw new IllegalArgumentException("MPA рейтинг должен быть указан");
         }
@@ -122,9 +127,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public void addLike(Integer filmId, Integer userId) {
-        String sql = "MERGE INTO film_likes (film_id, user_id) KEY(film_id, user_id) VALUES (?, ?)";
-        jdbcTemplate.update(sql, filmId, userId);
-        log.info("Лайк добавлен: фильм {} от пользователя {}", filmId, userId);
+        String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
+        try {
+            jdbcTemplate.update(sql, filmId, userId);
+            log.info("Лайк добавлен: фильм {} от пользователя {}", filmId, userId);
+        } catch (DuplicateKeyException e) {
+            log.debug("Лайк уже существует: фильм {} от пользователя {}", filmId, userId);
+        }
     }
 
     public void removeLike(Integer filmId, Integer userId) {
@@ -134,17 +143,26 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     public List<Film> getTopFilms(int count) {
-        String sql = "SELECT f.*, m.name as mpa_name FROM film f " +
+        String sql = "SELECT f.*, m.name as mpa_name, COUNT(fl.user_id) as like_count FROM film f " +
                 "JOIN mpa m ON f.mpa_id = m.mpa_id " +
                 "LEFT JOIN film_likes fl ON f.film_id = fl.film_id " +
                 "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.mpa_id, m.name " +
-                "ORDER BY COUNT(fl.user_id) DESC " +
+                "ORDER BY like_count DESC " +
                 "LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
+        List<Film> films = jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Film film = filmRowMapper.mapRow(rs, rowNum);
+            Mpa mpa = new Mpa();
+            mpa.setId(rs.getInt("mpa_id"));
+            mpa.setName(rs.getString("mpa_name"));
+            film.setMpa(mpa);
+            return film;
+        }, count);
+
         films.forEach(film -> {
             film.setGenres(loadGenresForFilm(film.getId()));
             loadLikesForFilm(film);
         });
+
         return films;
     }
 
@@ -167,5 +185,15 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT user_id FROM film_likes WHERE film_id = ?";
         Set<Integer> likes = new HashSet<>(jdbcTemplate.queryForList(sql, Integer.class, film.getId()));
         film.setLikes(likes);
+    }
+
+    private void validateFilmInTheFuture(Film film) {
+        final LocalDate MIN_RELEASE_DATE =
+                LocalDate.of(1895, 12, 28);
+        if (film.getReleaseDate().isBefore(MIN_RELEASE_DATE)) {
+            log.warn("Дата релиза {} раньше минимально допустимой даты {}",
+                    film.getReleaseDate(), MIN_RELEASE_DATE);
+            throw new ValidationException("Какато фигня");
+        }
     }
 }

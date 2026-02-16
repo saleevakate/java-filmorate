@@ -30,4 +30,10 @@ public class GenreDbStorage implements GenreStorage {
         }
         return genres.get(0);
     }
+
+    public boolean existsById(Integer id) {
+        String sql = "SELECT COUNT(*) FROM genre WHERE genre_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, id);
+        return count != null && count > 0;
+    }
 }
