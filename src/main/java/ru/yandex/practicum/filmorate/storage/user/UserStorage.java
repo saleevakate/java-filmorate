@@ -5,7 +5,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import java.util.Collection;
 
 public interface UserStorage {
-    //методы добавления, удаления и изменения объектов
+
     User create(User user);
 
     User update(User user);
@@ -14,7 +14,7 @@ public interface UserStorage {
 
     User userById(Integer id);
 
-    public Collection<User> findAll();
+    Collection<User> findAll();
 
-    public User validateUserExists(Integer id);
+    User validateUserExists(Integer id);
 }

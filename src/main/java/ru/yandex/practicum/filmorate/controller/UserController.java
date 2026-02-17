@@ -42,45 +42,38 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public void remove(@Valid @PathVariable("id") Integer id) {
+    public void remove(@PathVariable Integer id) {
         log.info("Удаление пользователя с ID: {}", id);
         userService.remove(id);
     }
 
     @GetMapping("/{id}")
-    public User userById(@Valid @PathVariable("id") Integer id) {
+    public User userById(@PathVariable Integer id) {
         log.info("Поиск пользователя с ID: {}", id);
         return userService.userById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(
-            @Valid @PathVariable("id") Integer userId,
-            @Valid @PathVariable("friendId") Integer friendId) {
-        log.info("Добавление пользователя {} в друзья пользователя {}", friendId, userId);
-        userService.addFriend(userId, friendId);
+    public void addFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        log.info("Добавление пользователя {} в друзья пользователя {}", friendId, id);
+        userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(
-            @Valid @PathVariable("id") Integer userId,
-            @Valid @PathVariable("friendId") Integer friendId) {
-        log.info("Удаление пользователя {} из друзей пользователя {}", friendId, userId);
-        userService.removeFriend(userId, friendId);
+    public void removeFriend(@PathVariable Integer id, @PathVariable Integer friendId) {
+        log.info("Удаление пользователя {} из друзей пользователя {}", friendId, id);
+        userService.removeFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> getFriends(
-            @Valid @PathVariable("id") Integer userId) {
-        log.info("Получение списка друзей пользователя с ID: {}", userId);
-        return userService.getFriends(userId);
+    public Collection<User> getFriends(@PathVariable Integer id) {
+        log.info("Получение списка друзей для пользователя с ID: {}", id);
+        return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(
-            @Valid @PathVariable("id") Integer userId,
-            @Valid @PathVariable("otherId") Integer otherUserId) {
-        log.info("Получение списка общих друзей пользователей {} и {}", userId, otherUserId);
-        return userService.getCommonFriends(userId, otherUserId);
+    public Collection<User> getCommonFriends(@PathVariable Integer id, @PathVariable Integer otherId) {
+        log.info("Поиск общих друзей для пользователей {} и {}", id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 }
